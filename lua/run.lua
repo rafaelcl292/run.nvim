@@ -12,7 +12,9 @@ end
 M.clear_data = data.clear_data
 
 function M.set_cmd()
-    local cmd = vim.fn.input('Enter command: ')
+    local old_cmd = data.get_cmd()
+    if old_cmd == nil then old_cmd = '' end
+    local cmd = vim.fn.input('Enter command: ', old_cmd)
     data.set_cmd(cmd)
     return cmd
 end
