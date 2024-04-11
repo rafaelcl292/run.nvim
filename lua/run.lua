@@ -9,9 +9,9 @@ function M.setup(opts)
     auto_set_cmd = opts.auto_set_cmd
 end
 
-M.clear_data = data.clear_data
+local clear_data = data.clear_data
 
-function M.set_cmd()
+local function set_cmd()
     local old_cmd = data.get_cmd()
     if old_cmd == nil then old_cmd = '' end
     local cmd = vim.fn.input('Enter command: ', old_cmd)
@@ -19,7 +19,7 @@ function M.set_cmd()
     return cmd
 end
 
-function M.run()
+local function run()
     local cmd = data.get_cmd()
     if cmd == '' or cmd == nil then
         if not auto_set_cmd then
@@ -27,23 +27,22 @@ function M.run()
             return
         end
         cmd = M.set_cmd()
+        if cmd == '' then return end
     end
-    print('Running...')
 
-    vim.fn.jobstart(cmd, {
-        stdout_buffered = true,
-        on_stdout = function(_, out, _)
-            local allLines = ''
-            for _, line in ipairs(out) do
-                allLines = allLines .. line .. '\n'
-            end
-            vim.notify(allLines)
-        end,
-    })
+    -- Open a new terminal window at the bottom
+    vim.cmd.new()
+    vim.cmd.wincmd('J')
+    vim.api.nvim_win_set_height(0, math.floor(vim.o.lines * 0.30))
+    vim.cmd.terminal()
+    vim.wait(150)
+
+    -- Send the command to the terminal
+    vim.fn.chansend(vim.bo.channel, { cmd .. '\r\n' })
 end
 
-vim.api.nvim_create_user_command('Run', M.run, { nargs = 0 })
-vim.api.nvim_create_user_command('RunSet', M.set_cmd, { nargs = 0 })
-vim.api.nvim_create_user_command('RunClearAll', M.clear_data, { nargs = 0 })
+vim.api.nvim_create_user_command('Run', run, { nargs = 0 })
+vim.api.nvim_create_user_command('RunSet', set_cmd, { nargs = 0 })
+vim.api.nvim_create_user_command('RunClearAll', clear_data, { nargs = 0 })
 
 return M
