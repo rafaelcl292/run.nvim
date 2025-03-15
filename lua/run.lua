@@ -35,10 +35,8 @@ local function run()
     vim.cmd.wincmd('J')
     vim.api.nvim_win_set_height(0, math.floor(vim.o.lines * 0.30))
     vim.cmd.terminal()
-    vim.wait(150)
-
-    -- Send the command to the terminal
-    vim.fn.chansend(vim.bo.channel, { cmd .. '\r\n' })
+    local channel = vim.bo.channel
+    vim.defer_fn(function() vim.fn.chansend(channel, { cmd .. '\r\n' }) end, 200)
 end
 
 vim.api.nvim_create_user_command('Run', run, { nargs = 0 })
